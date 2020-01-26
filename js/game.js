@@ -8,6 +8,12 @@ gameScene.init = function() {
     health: 100,
     fun: 100
   };
+
+  // decay params
+  this.decayRates = {
+    health: -10,
+    fun: -5
+  };
 };
 
 // load asset files
@@ -68,6 +74,16 @@ gameScene.create = function() {
   // show stats to the user
   this.createHud();
   this.refreshHud();
+
+  // decay of health and fun over time
+  this.timedEventStats = this.time.addEvent({
+    delay: 1000,
+    repeat: -1, // repeat forever
+    callback: () => {
+      // update stats
+      this.updateStats(this.decayRates);
+    }
+  });
 };
 
 // create ui
@@ -135,14 +151,11 @@ gameScene.rotatePet = function() {
     angle: 720,
     pause: false,
     onComplete: (tween, sprites) => {
-      // increase fun
-      this.scene.stats.fun += this.customStats.fun;
+      // update stats
+      this.scene.updateStats(this.customStats);
 
       // set UI to ready
       this.scene.uiReady();
-
-      // update stats
-      this.scene.refreshHud();
     }
   });
 };
@@ -210,19 +223,48 @@ gameScene.placeItem = function(pointer, localX, localY) {
 
         // clear the ui
         this.uiReady();
-
-        // update stats
-        this.refreshHud();
       });
 
       // play spritesheet animation
       this.pet.play("funnyfaces");
 
-      // update pet stats
-      this.stats.health += this.selectedItem.customStats.health;
-      this.stats.fun += this.selectedItem.customStats.fun;
+      // update stats
+      this.updateStats(this.selectedItem.customStats);
     }
   });
+};
+
+// update stats
+gameScene.updateStats = function(statDiff) {
+  // manually update pet stats
+  // this.stats.health += statDiff.health;
+  // this.stats.fun += statDiff.fun;
+
+  // flag to see if it's game over
+  let isGameOver = false;
+
+  // mor flexible update
+  for (stat in statDiff) {
+    if (statDiff.hasOwnProperty(stat)) {
+      this.stats[stat] += statDiff[stat];
+
+      // stats can't go below 0
+      if (this.stats[stat] < 0) {
+        isGameOver = true;
+        this.stats[stat] = 0;
+      }
+    }
+  }
+
+  // refresh hud
+  this.refreshHud();
+
+  // check to see if the game ended
+  if (isGameOver) this.gameOver();
+};
+
+gameScene.gameOver = function() {
+  console.log("game over");
 };
 
 // update loop
