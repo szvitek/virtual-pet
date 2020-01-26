@@ -31,10 +31,15 @@ gameScene.preload = function() {
 // create
 gameScene.create = function() {
   // bg
-  this.add
+  const bg = this.add
     .sprite(0, 0, "backyard")
     .setOrigin(0, 0)
     .setInteractive();
+
+  // event listener for bg click (to place objects on it)
+  bg.on("pointerdown", (pointer, localX, localY) =>
+    this.placeItem(pointer, localX, localY)
+  );
 
   // pet
   this.pet = this.add.sprite(100, 200, "pet", 0).setInteractive();
@@ -120,6 +125,26 @@ gameScene.uiReady = function() {
 
   // enable ui
   this.uiBlocked = false;
+};
+
+gameScene.placeItem = function(pointer, localX, localY) {
+  // localX and localY match the global positions, because bg's origin is at 0,0
+
+  if (!this.selectedItem) return;
+
+  // create a new item at the position where the player clicked/tapped
+  const newItem = this.add.sprite(
+    localX,
+    localY,
+    this.selectedItem.texture.key
+  );
+
+  // update pet stats
+  this.stats.health += this.selectedItem.customStats.health;
+  this.stats.fun += this.selectedItem.customStats.fun;
+
+  // clear the ui
+  this.uiReady();
 };
 
 // update loop
