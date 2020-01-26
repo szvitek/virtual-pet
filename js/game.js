@@ -64,6 +64,10 @@ gameScene.create = function() {
   });
 
   this.createUi();
+
+  // show stats to the user
+  this.createHud();
+  this.refreshHud();
 };
 
 // create ui
@@ -93,6 +97,27 @@ gameScene.createUi = function() {
   this.uiReady();
 };
 
+// create HUD
+gameScene.createHud = function() {
+  // health stat
+  this.healthText = this.add.text(20, 20, "Health: ", {
+    font: "26px Arial",
+    fill: "#ffffff"
+  });
+
+  // fun stat
+  this.funText = this.add.text(200, 20, "Fun: ", {
+    font: "26px Arial",
+    fill: "#ffffff"
+  });
+};
+
+// show the current value of health and fun
+gameScene.refreshHud = function() {
+  this.healthText.setText(`Health: ${this.stats.health}`);
+  this.funText.setText(`Fun: ${this.stats.fun}`);
+};
+
 // rotate pet
 gameScene.rotatePet = function() {
   if (this.scene.uiBlocked) return;
@@ -115,6 +140,9 @@ gameScene.rotatePet = function() {
 
       // set UI to ready
       this.scene.uiReady();
+
+      // update stats
+      this.scene.refreshHud();
     }
   });
 };
@@ -182,6 +210,9 @@ gameScene.placeItem = function(pointer, localX, localY) {
 
         // clear the ui
         this.uiReady();
+
+        // update stats
+        this.refreshHud();
       });
 
       // play spritesheet animation
