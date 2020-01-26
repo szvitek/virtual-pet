@@ -44,6 +44,16 @@ gameScene.create = function() {
   // pet
   this.pet = this.add.sprite(100, 200, "pet", 0).setInteractive();
 
+  this.anims.create({
+    key: "funnyfaces",
+    frames: this.anims.generateFrameNames("pet", {
+      frames: [1, 2, 3]
+    }),
+    frameRate: 7,
+    yoyo: true,
+    repeat: 0
+  });
+
   // make pet draggable
   this.input.setDraggable(this.pet);
   // follow pointer (mouse/finger) when dragging
@@ -99,15 +109,12 @@ gameScene.rotatePet = function() {
     duration: 1000,
     angle: 720,
     pause: false,
-    callbackScope: this,
-    onComplete: function(tween, sprites) {
-      console.log(this);
+    onComplete: (tween, sprites) => {
       // increase fun
       this.scene.stats.fun += this.customStats.fun;
 
       // set UI to ready
       this.scene.uiReady();
-      console.log(this.scene.stats);
     }
   });
 };
@@ -124,8 +131,6 @@ gameScene.pickItem = function() {
   this.scene.selectedItem = this;
 
   this.alpha = 0.5;
-
-  console.log("picking an item %s", this.texture.key);
 };
 
 gameScene.uiReady = function() {
@@ -146,6 +151,9 @@ gameScene.placeItem = function(pointer, localX, localY) {
 
   if (!this.selectedItem) return;
 
+  // UI must be unblocked
+  if (this.uiBlocked) return;
+
   // create a new item at the position where the player clicked/tapped
   const newItem = this.add.sprite(
     localX,
@@ -153,12 +161,37 @@ gameScene.placeItem = function(pointer, localX, localY) {
     this.selectedItem.texture.key
   );
 
-  // update pet stats
-  this.stats.health += this.selectedItem.customStats.health;
-  this.stats.fun += this.selectedItem.customStats.fun;
+  // block the UI
+  this.uiBlocked = true;
 
-  // clear the ui
-  this.uiReady();
+  // pet movement (tween)
+  let petTween = this.tweens.add({
+    targets: this.pet,
+    duration: 500,
+    x: newItem.x,
+    y: newItem.y,
+    paused: false,
+    onComplete: (tween, sprites) => {
+      // destroy item
+      newItem.destroy();
+
+      // event listener for when spritesheet animation ends
+      this.pet.on("animationcomplete", () => {
+        // set pet back to neutral face
+        this.pet.setFrame(0);
+
+        // clear the ui
+        this.uiReady();
+      });
+
+      // play spritesheet animation
+      this.pet.play("funnyfaces");
+
+      // update pet stats
+      this.stats.health += this.selectedItem.customStats.health;
+      this.stats.fun += this.selectedItem.customStats.fun;
+    }
+  });
 };
 
 // update loop
