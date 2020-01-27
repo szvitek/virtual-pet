@@ -51,11 +51,31 @@ preloadScene.preload = function() {
     margin: 1,
     spacing: 1
   });
+
+  // load audio
+  this.load.audio("bg", "assets/audio/bg.mp3");
+  this.load.audio("apple", "assets/audio/apple.mp3");
+  this.load.audio("candy", "assets/audio/candy.mp3");
+  this.load.audio("duck", "assets/audio/duck.mp3");
+  this.load.audio("rotate", "assets/audio/rotate.mp3");
+  this.load.audio("pop", "assets/audio/pop.mp3");
+  this.load.audio("eat", "assets/audio/eat.mp3");
+  this.load.audio("lose", "assets/audio/lose.mp3");
 };
 
 preloadScene.create = function() {
   this.anims.create({
     key: "funnyfaces",
+    frames: this.anims.generateFrameNames("pet", {
+      frames: [5, 6]
+    }),
+    frameRate: 7,
+    yoyo: true,
+    repeat: 3
+  });
+
+  this.anims.create({
+    key: "eatingfaces",
     frames: this.anims.generateFrameNames("pet", {
       frames: [1, 2, 3]
     }),

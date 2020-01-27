@@ -56,6 +56,17 @@ gameScene.create = function() {
       this.updateStats(this.decayRates);
     }
   });
+
+  // audio stuff
+  this.sounds = {
+    apple: this.sound.add("apple"),
+    candy: this.sound.add("candy"),
+    toy: this.sound.add("duck"),
+    rotate: this.sound.add("rotate"),
+    pop: this.sound.add("pop"),
+    eat: this.sound.add("eat"),
+    lose: this.sound.add("lose")
+  };
 };
 
 // create ui
@@ -117,6 +128,8 @@ gameScene.rotatePet = function() {
   this.scene.uiBlocked = true;
   this.alpha = 0.5;
 
+  this.scene.sounds.rotate.play();
+
   this.rotateTween = this.scene.tweens.add({
     targets: this.scene.pet,
     duration: 1000,
@@ -144,6 +157,8 @@ gameScene.pickItem = function() {
   this.scene.selectedItem = this;
 
   this.alpha = 0.5;
+
+  this.scene.sounds[this.texture.key].play();
 };
 
 gameScene.uiReady = function() {
@@ -174,6 +189,8 @@ gameScene.placeItem = function(pointer, localX, localY) {
     this.selectedItem.texture.key
   );
 
+  this.sounds.pop.play();
+
   // block the UI
   this.uiBlocked = true;
 
@@ -188,6 +205,9 @@ gameScene.placeItem = function(pointer, localX, localY) {
       // destroy item
       newItem.destroy();
 
+      // play sound
+      this.sounds.eat.play();
+
       // event listener for when spritesheet animation ends
       this.pet.on("animationcomplete", () => {
         // set pet back to neutral face
@@ -198,7 +218,11 @@ gameScene.placeItem = function(pointer, localX, localY) {
       });
 
       // play spritesheet animation
-      this.pet.play("funnyfaces");
+      if (this.selectedItem.texture.key === "toy") {
+        this.pet.play("funnyfaces");
+      } else {
+        this.pet.play("eatingfaces");
+      }
 
       // update stats
       this.updateStats(this.selectedItem.customStats);
@@ -236,15 +260,20 @@ gameScene.updateStats = function(statDiff) {
 };
 
 gameScene.gameOver = function() {
+  this.timedEventStats.remove();
+
   // block ui
   this.uiBlocked = true;
 
   // change frame of the pet
   this.pet.setFrame(4);
 
+  homeScene.bgMusic.stop();
+  this.sounds.lose.play();
+
   // keep the game on for a some time, then move on
   this.time.addEvent({
-    delay: 2000,
+    delay: 3000,
     repeat: 0,
     callback: () => {
       // update stats

@@ -31,4 +31,8 @@ homeScene.create = function() {
   bg.on("pointerdown", () => {
     this.scene.start("Game");
   });
+
+  // audio
+  this.bgMusic = this.sound.add("bg");
+  this.bgMusic.play({ loop: true });
 };
