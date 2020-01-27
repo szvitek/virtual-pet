@@ -11,8 +11,8 @@ gameScene.init = function() {
 
   // decay params
   this.decayRates = {
-    health: -10,
-    fun: -5
+    health: -5,
+    fun: -2
   };
 };
 
